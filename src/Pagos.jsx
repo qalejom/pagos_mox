@@ -1,84 +1,193 @@
-const PagosForm = () => (
-    <form className="card card-body">
-        <h3 className="mb-3">Pagos</h3>
-        <div class="row">
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Inmueble" />
-            </div>
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Canon" />
-            </div>
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Fecha" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Dias" />
-            </div>
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Valor Dia" />
-            </div>
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Deposito" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Admin Conjunto" />
-            </div>
-            <div class="col">
-                <input className="form-control mb-2" placeholder="%" />
-            </div>
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Admin Inmobiliaria" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Egreso 1" />
-            </div>
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Concepto" />
-            </div>
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Egreso 2" />
-            </div>
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Concepto" />
-            </div>
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Egreso 3" />
-            </div>
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Concepto" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Agua" />
-            </div>
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Energia" />
-            </div>
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Gas" />
-            </div>
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Telefonia/Internet" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Observaciones" />
-            </div>
-            <div class="col">
-                <input className="form-control mb-2" placeholder="Valor Total" />
-            </div>
-        </div>
-        <button className="btn btn-info text-white">Grabar</button>
-    </form>
 
-);
+import { useState, useEffect } from "react";
+
+const PagosForm = () => {
+    const [inmuebles, setInmuebles] = useState([]);
+    const [fechaPago, setFechaPago] = useState(new Date().toISOString().substring(0, 10));
+    const [mesPago, setFechaMes] = useState(new Date().toISOString().substring(0, 7));
+    const [id, setIdInmueble] = useState(0);
+    const [valor, setValorArrendamiento] = useState("");
+    const [observaciones, setObservaciones] = useState(".");
+
+    useEffect(() => {
+        if (!mesPago) {
+            setInmuebles([]);
+            setIdInmueble(0);
+            setValorArrendamiento("");
+            return;
+        }
+        console.log(mesPago)
+        fetch('http://localhost:8090/api/inmuebles/sin-pago-arrendador?mesPago=' + mesPago)
+            .then(res => res.json())
+            .then(data => setInmuebles(data))
+            .catch(err => console.error("Error cargando inmuebles:", err));
+    }, [mesPago]);
+
+    useEffect(() => {
+        const inmuebleSeleccionado = inmuebles.find(
+            i => String(i.id) === String(id)
+        );
+
+        setValorArrendamiento(
+            inmuebleSeleccionado?.canon ?? ""
+        );
+
+    }, [id, inmuebles]);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const inmueble = { id }
+        const pagosArrendatarios = { inmueble, mesPago, valor, fechaPago, observaciones }// pagoArrendador }
+        console.log(JSON.stringify(pagosArrendatarios))
+        const response = await fetch('http://localhost:8090/api/pagosarrendatarios/nuevo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(pagosArrendatarios),
+        });
+
+        if (response.ok) {
+            alert('Pago guardado');
+            window.location.reload();
+        } else {
+            alert('Error al guardar');
+        }
+    }
+
+    return (
+        <form className="card card-body" onSubmit={handleSubmit}>
+            <h3 className="mb-3">Pagos</h3>
+            <div class="row">
+                <div className="col">
+                    <label>Mes pago</label>
+                    <input
+                        type="month"
+                        className="form-control mb-2"
+                        value={mesPago}
+                        onChange={e => setFechaMes(e.target.value)}
+                    />
+                </div>
+
+                <div class="col">
+                    <label>Inmueble</label>
+                    <select
+                        className="form-select"
+                        value={id}
+                        onChange={e => setIdInmueble(e.target.value)}
+                    >
+                        <option value="">Seleccione un inmueble</option>
+                        {inmuebles.map(i => (
+                            <option key={i.id} value={i.id}>
+                                {i.direccion}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div class="col">
+                    <label>Canon</label>
+                    <input className="form-control mb-2"
+                        value={valor}
+                        onChange={(e) => setValorArrendamiento(e.target.value)} />
+                </div>
+
+                <div className="col">
+                    <label>Fecha pago</label>
+                    <input
+                        type="date"
+                        className="form-control mb-2"
+                        value={fechaPago}
+                        onChange={(e) => setFechaPago(e.target.value)}
+                        disabled={true}
+                    />
+                </div>
+            </div>
+            <div class="row">
+
+                <div class="col">
+                    <label>Dias</label>
+                    <input className="form-control mb-2" />
+                </div>
+
+                <div class="col">
+                    <label>Valor Dia</label>
+                    <input className="form-control mb-2" />
+                </div>
+
+                <div class="col">
+                    <label>Deposito</label>
+                    <input className="form-control mb-2" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label>% inmobiliaria</label>
+                    <input className="form-control mb-2" />
+                </div>
+                <div class="col">
+                    <label>Valor Admon Inmobiliaria</label>
+                    <input className="form-control mb-2" />
+                </div>
+            </div>
+            <div class="row">
+                <div className="container mt-4">
+                    <div className="card shadow">
+                        <div className="card-header bg-info text-white">
+                            <h5 className="mb-0">Lista de Egresos</h5>
+                        </div>
+                        <div className="card-body">
+                            <div className="table-responsive">
+                                <table className="table table-striped table-hover align-middle">
+                                    <thead className="table-dark text-center thead-delgado">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Concepto</th>
+                                            <th>FechaPago</th>
+                                            <th>Valor</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className="card shadow mb-4">
+
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label >Valor Total a pagar</label>
+                    <input className="form-control fs-4 fw-bold text-end" type="text"
+                    />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label>Observaciones</label>
+                    <input className="form-control mb-2" type="text" 
+                    value={observaciones}
+                    onChange={(e) => setObservaciones(e.target.value)}
+                    />
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label>Forma de pago</label>
+                    <input className="form-control mb-2" />
+                </div>
+                <div class="col">
+                    <label>Numero</label>
+                    <input className="form-control mb-2" />
+                </div>
+                <div class="col">
+                    <label>Numero Aprobación</label>
+                    <input className="form-control mb-2" />
+                </div>
+            </div>
+            <button className="btn btn-info text-white">Grabar</button>
+        </form>
+    )
+}
 
 export default PagosForm;
