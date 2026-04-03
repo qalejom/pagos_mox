@@ -21,3 +21,38 @@ body {
   padding-bottom: 6px !important;
   font-size: 14px;
 }
+
+/* Sidebar visual improvements */
+.nav-link {
+  color: #6c757d;
+  font-weight: 500;
+  border-radius: 8px !important;
+  transition: all 0.2s ease-in-out;
+  border: none;
+  background: none;
+}
+
+.nav-link:hover {
+  background-color: #f1f4f9 !important;
+  color: #0d6efd !important;
+}
+
+.nav-link.active {
+  background-color: #e7f1ff !important;
+  color: #0d6efd !important;
+}
+
+/* Badge personalizado */
+.bg-soft-primary {
+  background-color: #e7f1ff;
+}
+
+/* Efecto para los submenús */
+.small.nav-link {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.small.nav-link:hover {
+  background-color: #dee2e6 !important;
+}

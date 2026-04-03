@@ -1,7 +1,7 @@
 //import logo from './logo.svg';
 //import './App.css';
 import React, { useState } from 'react';
-import Header from './Header';
+import Header from './Header'; // Tu nuevo Sidebar
 import HomeForm from './Home';
 import TercerosForm from './Terceros';
 import InmueblesForm from './Inmuebles';
@@ -20,19 +20,29 @@ function App() {
       case 'pagos': return <PagosForm />;
       case 'egresosCliente': return <EgresosClientes />;
       case 'pagosArrendatarios': return <PagosArrendatarios />;
-      default: return <p>Selecciona un formulario</p>;
+      default: return <p className="text-center mt-5">Selecciona un formulario en el menú lateral</p>;
     }
   };
 
   return (
-    <div className="container mt-4">
+    <div className="d-flex">
+      {/* 1. El Sidebar (Header) se queda fijo a la izquierda */}
       <Header onChangeForm={setFormToShow} />
-      <div className="container mt-5">
-        {renderForm()}
-      </div>
-    </div>
-  )
 
+      {/* 2. El contenido principal se desplaza a la derecha */}
+      <main style={{ 
+        marginLeft: "250px", 
+        width: "100%", 
+        minHeight: "100vh", 
+        backgroundColor: "#f8f9fa",
+        padding: "40px" 
+      }}>
+        <div className="container-fluid">
+          {renderForm()}
+        </div>
+      </main>
+    </div>
+  );
 }
 
 export default App;
